@@ -23,6 +23,14 @@ class CategoryViewController: SwipeTableViewController {
         tableView.separatorStyle = .none
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Nav controller does not exsist")
+        }
+        
+        navBar.backgroundColor = UIColor(hexString: "298DFF")
+    }
 
 //MARK: - TableView DataSource Methods
     // to display all the categories from the persistant container
@@ -35,9 +43,15 @@ class CategoryViewController: SwipeTableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
-        cell.backgroundColor = RandomFlatColor()
         
+        if let category = categories?[indexPath.row] {
+            cell.textLabel?.text = category.name
+            guard  let catColor = UIColor(hexString: (category.color)) else {fatalError("sdfasdf")}
+            cell.backgroundColor = catColor
+            cell.textLabel?.textColor = ContrastColorOf(catColor, returnFlat: true)
+            
+        }
+       
         return cell
     }
 //MARK: - TableView Data Manipulation methods
@@ -90,6 +104,7 @@ class CategoryViewController: SwipeTableViewController {
 
             let newCat = Category()
             newCat.name = textField.text!
+            newCat.color = UIColor.randomFlat().hexValue()
 
             self.save(category: newCat)
 

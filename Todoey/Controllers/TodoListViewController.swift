@@ -8,11 +8,16 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController{
     
     var todoItems : Results<Item>?
     let realm = try! Realm()
+    
+    
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     var selectedCategory : Category? {
         didSet {
            loadItems()
@@ -26,11 +31,25 @@ class TodoListViewController: SwipeTableViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-  
-
+        tableView.separatorStyle = .none
+        
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        if let colorHex = selectedCategory?.color {
+            title = selectedCategory!.name
+            guard let navBar = navigationController?.navigationBar else {fatalError("Nav cont does not exsist")}
+            
+            if let navBarColor = UIColor(hexString: colorHex) {
+                navBar.backgroundColor = navBarColor
+                searchBar.barTintColor = navBarColor
+                navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+                navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor :  ContrastColorOf(navBarColor, returnFlat: true)]
+            }
 
+        }
+
+    }
 
 //MARK: - TableView Datasource methods
 
@@ -44,6 +63,14 @@ class TodoListViewController: SwipeTableViewController{
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
+            if let color =  UIColor(hexString: selectedCategory!.color)?.darken(byPercentage:CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                        cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+
+            }
+            
+
+          
             cell.accessoryType = item.done ? .checkmark : .none
         } else {
             cell.textLabel?.text = "No items added"
